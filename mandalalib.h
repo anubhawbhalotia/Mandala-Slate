@@ -116,3 +116,7 @@ vector <lineEquation> drawBoard(Mat obj, int depth, Vec3b color)
 	}
 	return all_le;
 }
+double getSlope(pair < int, int> point)
+{
+	return double(point.first)/point.second;
+}

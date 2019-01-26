@@ -54,21 +54,30 @@ int main()
 		pair <int,int> centre=getCentre(livePoint, 100, COLOR_CENTRE);
 		cout<<"centre="<<centre.first<<endl;
 		drawnPoints.push_back(centre);
-		canavas.at<Vec3b>(centre.first, centre.second) = COLOR_DRAW_MANDALA;
-		for(int i=0; i!=all_le.size(); i++)
+		if(centre.second >= BOARD_COLUMN && centre.second<BOARD_COLUMN+BOARD_WIDTH)
 		{
-			drawnPoints = getReflectedLine(drawnPoints, le[i]);
-			drawPoints(drawnPoints, canavas, COLOR_DRAW_MANDALA);
-			allDrawnPoints.push_back(drawnPoints[0]);
+			canavas.at<Vec3b>(centre.first, centre.second) = COLOR_DRAW_MANDALA;
+			double slope = getSlope(translateOpenCVToMandala(centre));
+			if(slope < 1 && slope >0 && centre.first>0 && centre.second>0)
+			{
+				for(int i=0; i!=all_le.size(); i++)
+				{
+					drawnPoints = getReflectedLine(drawnPoints, le[i]);
+					cout<<"a"<<drawnPoints[0].first<<" "<<drawnPoints[0].second<<endl;
+					drawPoints(drawnPoints, canavas, COLOR_DRAW_MANDALA);
+					allDrawnPoints.push_back(drawnPoints[0]);
+				}
+			}
+
+			for(int i=0;i<le.size(); i++)
+			{
+				vector < pair < int, int> > linePoints = 
+					getReflectedLine(allDrawnPoints, le[i]);
+				drawPoints(linePoints, canavas, COLOR_DRAW_MANDALA);
+				allDrawnPoints.insert(allDrawnPoints.end(),
+					linePoints.begin(), linePoints.end());
+			}
 		}
-		// for(int i=0;i<le.size(); i++)
-		// {
-		// 	vector < pair < int, int> > linePoints = 
-		// 		getReflectedLine(allDrawnPoints, le[i]);
-		// 	drawPoints(linePoints, canavas, COLOR_DRAW_MANDALA);
-		// 	allDrawnPoints.insert(allDrawnPoints.end(),
-		// 		linePoints.begin(), linePoints.end());
-		// }
 		int keyPress=waitKey(10);
 		imshow("canavas", canavas);
 	}
