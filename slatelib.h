@@ -2,7 +2,7 @@ using namespace cv;
 using namespace std;
 #define ROW 720
 #define COLUMN 1280
-int initializeMatObject(int r1, int c1, int r2, int c2, int rMat obj, 
+int initializeMatObject(int r1, int r2, int c1, int c2, Mat &obj, 
 	Vec3b color)
 {
 	/*
@@ -72,8 +72,11 @@ vector < pair <int,int> > getLine(pair <int,int> a,pair <int,int> b)
 	}
 	return points;
 }
-void drawPoints(vector < pair < int,int>> points,Mat obj,Vec3b color)
+void drawPoints(vector < pair < int,int>> points, Mat obj, Vec3b color)
 {
+	/*
+		Takes points as input and colours those points.
+	*/
 	for(vector <pair <int,int> > :: iterator it=points.begin();it!=points.end();it++)
 	{
 		obj.at<Vec3b>((*it).first,(*it).second)=color;
