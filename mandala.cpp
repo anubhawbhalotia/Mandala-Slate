@@ -7,14 +7,18 @@
 using namespace cv;
 using namespace std;
 Mat original(ROW, COLUMN, CV_8UC3);
+Mat livePoint(ROW, COLUMN, CV_8UC3);
+Mat canavas(ROW, COLUMN, CV_8UC3);
 VideoCapture cap("v4l2:///dev/video0");
-
 int main()
 {
 	namedWindow("canavas", WINDOW_NORMAL);
 	namedWindow("original", WINDOW_NORMAL);
-	Mat canavas(ROW, COLUMN, CV_8UC3);
-	int depth = 5;
+	vector <lineEquation> le;
+	le.push_back(lineEquation(1, -1, 0));
+	le.push_back(lineEquation(0, 1, 0));
+	le.push_back(lineEquation(1, 0, 0));
+	int depth = 2;
 	depth-=2;
 	if(cap.isOpened()==false)
 	{
@@ -22,12 +26,7 @@ int main()
 		cin.get();
 	}
 	// initializeMatObject(canavas, COLOR_BACKGROUND);
-	initializeMatObject(0, 
-		ROW,
-		0,
-		COLUMN, 
-		canavas, 
-		COLOR_BLACK);
+	initializeMatObject(0, ROW, 0, COLUMN, canavas, COLOR_BLACK);
 	initializeMatObject(BOARD_ROW, 
 		BOARD_ROW + BOARD_HEIGHT,
 		BOARD_COLUMN,
@@ -35,15 +34,41 @@ int main()
 		canavas, 
 		COLOR_BACKGROUND);
 	imshow("canavas", canavas);
-	drawBoard(canavas, 
-			depth, 
-			COLOR_BOARD);
+	vector <lineEquation> all_le = drawBoard(canavas, 
+			depth, COLOR_BOARD);
+	for(int i=0; i!=all_le.size(); i++)
+	{
+		all_le[i].displayVal();
+	}
 	while(1)
 	{
+		vector < pair < int, int > > drawnPoints, allDrawnPoints;
 		bool bSuccess=cap.read(original);
-		imshow("original", original);
 		if(bSuccess==false)
 			break;	
+		invertImage(original);
+		initializeMatObject(0, ROW, 0, COLUMN, livePoint, COLOR_BLACK);
+		binarise(original, livePoint, 2, 1, 0, COLOR_CENTRE);
+		imshow("original", original);
+		imshow("livePoint", livePoint);
+		pair <int,int> centre=getCentre(livePoint, 100, COLOR_CENTRE);
+		cout<<"centre="<<centre.first<<endl;
+		drawnPoints.push_back(centre);
+		canavas.at<Vec3b>(centre.first, centre.second) = COLOR_DRAW_MANDALA;
+		for(int i=0; i!=all_le.size(); i++)
+		{
+			drawnPoints = getReflectedLine(drawnPoints, le[i]);
+			drawPoints(drawnPoints, canavas, COLOR_DRAW_MANDALA);
+			allDrawnPoints.push_back(drawnPoints[0]);
+		}
+		// for(int i=0;i<le.size(); i++)
+		// {
+		// 	vector < pair < int, int> > linePoints = 
+		// 		getReflectedLine(allDrawnPoints, le[i]);
+		// 	drawPoints(linePoints, canavas, COLOR_DRAW_MANDALA);
+		// 	allDrawnPoints.insert(allDrawnPoints.end(),
+		// 		linePoints.begin(), linePoints.end());
+		// }
 		int keyPress=waitKey(10);
 		imshow("canavas", canavas);
 	}

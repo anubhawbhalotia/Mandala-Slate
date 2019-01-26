@@ -7,14 +7,19 @@ using namespace std;
 #define BOARD_HEIGHT 701
 #define BOARD_WIDTH 701
 #define PI 3.14159
-Vec3b COLOR_BACKGROUND={255, 255, 255};
-Vec3b COLOR_BOARD = {160, 160, 160};
 Vec3b COLOR_BLACK = {0, 0, 0};
-Vec3b COLOR_RED = {255, 0, 0};
+Vec3b COLOR_RED = {0, 0, 255};
+Vec3b COLOR_WHITE={255, 255, 255};
+
+Vec3b COLOR_CENTRE = COLOR_WHITE;
+Vec3b COLOR_BACKGROUND= COLOR_WHITE;
+Vec3b COLOR_BOARD = {160, 160, 160};
+Vec3b COLOR_DRAW_MANDALA = COLOR_BLACK;
+
 typedef struct lineEquation
 {
-	int a,b,c;
-	lineEquation(int a,int b,int c):
+	double a,b,c;
+	lineEquation(double a,double b,double c):
 	a(a), b(b), c(c) {}
 	void displayVal()
 	{
@@ -45,28 +50,27 @@ double degreeToRadian(double degree)
 {
 	return (degree/180)*PI;
 }
-vector < pair <int,int> > getReflectedLine(vector < pair< int, int> > points, lineEquation le)
+vector < pair <int,int> > getReflectedLine(vector < pair< int, int> > points, 
+	lineEquation le)
 {
 	vector < pair <int,int> > reflectedPoints;
-	int a = le.a, b=le.b, c=le.c;
-	cout<<"a="<<a<<" "<<b<<" "<<c<<endl;
-	
+	double a = le.a, b=le.b, c=le.c;
 	for(int i=0; i!=points.size(); i++)
 	{
 		pair < int, int> mandalaPoint = translateOpenCVToMandala(points[i]);
 		int q=mandalaPoint.first;
 		int p=mandalaPoint.second;
-		cout<<p<<" "<<q<<endl;
 		int x=(((p * ((a*a) - (b*b))) - (2*b *((a*q) + c)))) / ((a*a) + (b*b));
-		cout<<x<<endl;
 		int y=(((q * ((b*b) - (a*a))) - (2*a *((b*p) + c)))) / ((a*a) + (b*b));
+		cout<<y<<" "<<x<<endl;
 		reflectedPoints.push_back(translateMandalaToOpenCV(make_pair(y, x)));
 	}
 	return reflectedPoints;
 }
-void drawBoard(Mat obj, int depth, Vec3b color)
+vector <lineEquation> drawBoard(Mat obj, int depth, Vec3b color)
 {
 	vector <pair <int, int>> allBoardPoints;
+	vector <lineEquation> all_le;
 	double stepSize = 45.0/pow(2,depth);
 	double mDeg =0.0;
 	vector <lineEquation> le;
@@ -79,12 +83,13 @@ void drawBoard(Mat obj, int depth, Vec3b color)
 	}
 	while(mDeg <= 45)
 	{
-		cout<<mDeg<<" ";
 		double mRad = degreeToRadian(mDeg);
-		cout<<mRad<<" "<<tan(mRad)<<endl;
 		int inp;
+		double tan_mRad = tan(mRad);
+		cout<<"tan="<<tan_mRad;
+		all_le.push_back(lineEquation(1,-1.0*tan_mRad,0));
 		pair <int, int> a = translateMandalaToOpenCV(make_pair(
-			double(tan(mRad) * int(BOARD_WIDTH/2)), BOARD_WIDTH/2));
+			double(tan_mRad * int(BOARD_WIDTH/2)), BOARD_WIDTH/2));
 		pair <int, int> b = translateMandalaToOpenCV(make_pair(0,0));
 		vector <pair <int, int>> linePoints = getLine(a,b);	
 		// for(int i=0; i<line.size(); i++)
@@ -108,6 +113,6 @@ void drawBoard(Mat obj, int depth, Vec3b color)
 		drawPoints(linePoints, obj, color);
 		allBoardPoints.insert(allBoardPoints.end(),
 			linePoints.begin(), linePoints.end());
-		cout<<allBoardPoints.size()<<endl;
 	}
+	return all_le;
 }

@@ -83,3 +83,57 @@ void drawPoints(vector < pair < int,int>> points, Mat obj, Vec3b color)
 		//*(obj.ptr((*it).first)+((*it).second))=250;
 	}
 }
+void binarise(Mat src, Mat obj, int p1, int p2, int p3,Vec3b colorLive)
+{
+	//converts a BGR image to binary image where red part 
+	for(int i=0;i<ROW;i++)
+	{	
+		for(int j=0;j<COLUMN;j++)
+		{
+			Vec3b color = src.at<Vec3b>(i,j);
+			if(color[p1]>=250 && color[p2]<250 && color[p3]<250)
+			{
+				obj.at<Vec3b>(i,j) = colorLive;
+			}
+
+		}
+	}
+}
+pair <long,long> getCentre(Mat src, long terminatePixelCount, 
+	Vec3b colorCentre)
+{
+	//terminatePixelCount : scanning stops when total number of active 
+	//pixels founde exceeds this parameter 
+	int i,j; 
+	pair <int,int> centre;
+	centre.first=-1;
+	centre.second=-1;
+	long n;
+	static int callCount=0;
+	callCount++;
+	long count=0;
+	for(i=0;i<src.rows;i++)
+	{
+		for(j=0;j<src.cols;j++)
+		{
+			Vec3b color=src.at<Vec3b>(i,j);
+			if(color==colorCentre)
+			{	
+				//*(g+j)=250;
+				centre.first+=i;
+				centre.second+=j;
+				count++;
+			}
+		}
+		if(count>terminatePixelCount)
+			break;
+	}
+	if(count)
+	{
+		centre.first/=count;
+		centre.second/=count;
+	}
+	if(i==src.rows)
+		cout<<"scanned completely"<<callCount<<" Count="<<count<<endl;
+	return centre;
+}
